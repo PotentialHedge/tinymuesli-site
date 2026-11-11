@@ -1,0 +1,79 @@
+---
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const UMAMI_WEBSITE_ID = "a24b71e1-4862-4d51-9a50-b4cbbd18d56a";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.site} />
+    <meta name="theme-color" content="#fbf8f3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#171512" media="(prefers-color-scheme: dark)" />
+    {import.meta.env.PROD && (
+      <script
+        is:inline
+        defer
+        src="https://analytics.potentialhedge.com/script.js"
+        data-website-id={UMAMI_WEBSITE_ID}
+        data-domains="tinymuesli.potentialhedge.com"
+      ></script>
+    )}
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #fbf8f3;
+    --fg: #24201b;
+    --muted: #6d655b;
+    --line: #e6dfd4;
+    --accent: #b5562b;
+    --accent-fg: #fff;
+    --card: #fff;
+    --me: #0a84ff;
+    --me-fg: #fff;
+    --them: #ebe7e1;
+    --them-fg: #24201b;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171512;
+      --fg: #ece6dc;
+      --muted: #a39a8e;
+      --line: #2e2a24;
+      --accent: #e0814f;
+      --accent-fg: #171512;
+      --card: #1f1c18;
+      --them: #2c2925;
+      --them-fg: #ece6dc;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  }
+  a { color: var(--accent); }
+  code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  code { font-size: 0.9em; }
+</style>

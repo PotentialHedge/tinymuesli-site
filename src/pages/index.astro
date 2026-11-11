@@ -1,0 +1,163 @@
+---
+import Base from "../layouts/Base.astro";
+
+const repo = "https://github.com/PotentialHedge/tinymuesli";
+const dmg = `${repo}/releases/latest/download/tinyMuesli.dmg`;
+const installs = [
+  { id: "curl", label: "Terminal", cmd: `curl -fsSL ${repo}/releases/latest/download/install.sh | sh` },
+  { id: "brew", label: "Homebrew", cmd: "brew install --cask potentialhedge/tap/tinymuesli" },
+];
+const features = [
+  { title: "Notices your meetings", text: "When Zoom, Teams, Slack, FaceTime or a call in your browser starts using the mic, one click starts recording. It doesn't need your calendar." },
+  { title: "Knows who said what", text: "Your mic is you and system audio is everyone else. Speaker identification runs on your Mac when the meeting ends." },
+  { title: "Fully local", text: "Apple's on-device speech recognition transcribes live. Audio is deleted 24 hours later unless you choose to keep it." },
+  { title: "Plain files", text: "Each meeting is a folder with transcript.md and transcript.json. Rename them, sort them and open them in any tool." },
+  { title: "Share as a web page", text: "Send a transcript as a page that opens in any browser. The meeting travels inside the link, so nothing is uploaded." },
+  { title: "Works with your agent", text: "An MCP server, a CLI and a hook that runs when a meeting ends let Claude, ChatGPT or your own scripts use your notes." },
+];
+---
+<Base
+  title="tinyMuesli: private meeting notes for your Mac"
+  description="tinyMuesli records and transcribes your meetings entirely on your Mac. Plain files, no cloud, free and open source."
+>
+  <header class="top">
+    <a class="brand" href="/"><img src="/favicon.svg" alt="" width="28" height="28" /><span>tiny<em>Muesli</em></span></a>
+    <a href={repo} data-umami-event="github-click" data-umami-event-location="header">GitHub</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1>Meeting notes that never leave your Mac.</h1>
+        <p class="lede">tinyMuesli sits in your menu bar, records your calls and transcribes them on your Mac as they happen. No account, no cloud, no bot joining the call.</p>
+        <div class="cta">
+          <a class="button" href={dmg} data-umami-event="download-click" data-umami-event-location="hero">Download for macOS</a>
+          <a class="button secondary" href={repo} data-umami-event="github-click" data-umami-event-location="hero">Source on GitHub</a>
+        </div>
+        <p class="note">Free and open source. Needs macOS 26 on an Apple Silicon Mac.</p>
+      </div>
+
+      <figure class="chat" aria-label="Example transcript">
+        <figcaption>Q4 roadmap · Tue 14:02</figcaption>
+        <div class="msg them"><b>Ann Lee</b>Can we ship the export before the offsite?</div>
+        <div class="msg me">If we drop the PDF option, yes. Markdown and JSON are done.</div>
+        <div class="msg them"><b>Sam Ortiz</b>Fine by me. Nobody asked for PDF anyway.</div>
+        <div class="msg me">Then I'll cut the release on Friday.</div>
+      </figure>
+    </section>
+
+    <section id="install">
+      <h2>Install</h2>
+      <ol class="steps">
+        <li><a href={dmg} data-umami-event="download-click" data-umami-event-location="install">Download tinyMuesli.dmg</a> and open it.</li>
+        <li>Drag tinyMuesli onto the Applications folder.</li>
+        <li>Open it. The first time, macOS blocks it because it isn't notarized yet: click <b>Done</b>, then <b>Open Anyway</b> in System Settings › Privacy &amp; Security.</li>
+      </ol>
+      <p>Or install from the command line, which skips step 3:</p>
+      <div class="tabs" role="tablist">
+        {installs.map((i, n) => (
+          <button role="tab" aria-selected={n === 0 ? "true" : "false"} data-tab={i.id}>{i.label}</button>
+        ))}
+      </div>
+      {installs.map((i, n) => (
+        <div class="install" data-panel={i.id} hidden={n !== 0}>
+          <pre><code>{i.cmd}</code></pre>
+          <button class="copy" data-copy={i.cmd} data-umami-event="install-copy" data-umami-event-method={i.id}>Copy</button>
+        </div>
+      ))}
+      <p class="note">Updates install from “Check for Updates…” in the app's menu. tinyMuesli is an early version, so expect rough edges.</p>
+    </section>
+
+    <section>
+      <h2>What it does</h2>
+      <div class="grid">
+        {features.map((f) => (
+          <div class="card"><h3>{f.title}</h3><p>{f.text}</p></div>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2>Bring your own AI</h2>
+      <p>tinyMuesli doesn't summarize anything itself. Your assistant gets the transcripts instead. In Settings › Assistants, <b>Copy Prompt</b> sets up an agent, and <b>Add…</b> adds tinyMuesli to the Claude or ChatGPT desktop app. Or add it by hand:</p>
+      <pre><code>claude mcp add --scope user tinymuesli -- \
+  /Applications/tinyMuesli.app/Contents/MacOS/tinyMuesli mcp</code></pre>
+      <p>The same binary is a CLI: <code>tinymuesli search "budget"</code>, <code>tinymuesli show</code>, <code>tinymuesli share</code> and more. See the <a href={`${repo}#readme`}>README</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <span>tinyMuesli by <a href="https://potentialhedge.com">Potential Hedge</a></span>
+    <a href={`${repo}/releases`}>Releases</a>
+  </footer>
+</Base>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll("[data-tab]").forEach((t) => t.setAttribute("aria-selected", String(t === tab)));
+      document.querySelectorAll<HTMLElement>("[data-panel]").forEach((p) => (p.hidden = p.dataset.panel !== tab.dataset.tab));
+    });
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy ?? "");
+        btn.textContent = "Copied";
+        setTimeout(() => (btn.textContent = "Copy"), 1500);
+      } catch {
+        btn.textContent = "Select and copy";
+      }
+    });
+  });
+</script>
+
+<style>
+  .top, main, footer { max-width: 60rem; margin: 0 auto; padding-left: 1.25rem; padding-right: 1.25rem; }
+  .top { display: flex; justify-content: space-between; align-items: center; padding-top: 1.25rem; }
+  .top a { text-decoration: none; color: var(--fg); font-weight: 600; }
+  .brand { display: flex; align-items: center; gap: .5rem; font-size: 1.1rem; letter-spacing: -0.01em; }
+  .brand em { font-style: normal; color: var(--accent); }
+
+  section { margin: 0 0 4.5rem; }
+  .hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 3rem; align-items: center; padding-top: 4rem; }
+  .hero > * { min-width: 0; }
+  @media (max-width: 760px) { .hero { grid-template-columns: 1fr; gap: 2.5rem; padding-top: 2.5rem; } }
+  h1 { font-size: clamp(2.3rem, 6vw, 3.4rem); line-height: 1.05; letter-spacing: -0.03em; margin: 0 0 1.1rem; }
+  h2 { font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 1rem; }
+  h3 { font-size: 1rem; margin: 0 0 .3rem; }
+  .lede { font-size: 1.2rem; color: var(--muted); margin: 0 0 2rem; }
+  .cta { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: .75rem; }
+  .button { display: inline-block; padding: .7rem 1.2rem; border-radius: .6rem; font-weight: 600;
+            text-decoration: none; background: var(--accent); color: var(--accent-fg); }
+  .button.secondary { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+  .note { font-size: .9rem; color: var(--muted); margin: .75rem 0 0; }
+  .steps { padding-left: 1.3rem; margin: 0 0 1.5rem; }
+  .steps li { margin-bottom: .35rem; }
+
+  .chat { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 1.1rem;
+          padding: 1.1rem; display: flex; flex-direction: column; gap: .5rem; font-size: .95rem; line-height: 1.4; }
+  .chat figcaption { text-align: center; font-size: .78rem; color: var(--muted); margin-bottom: .25rem; }
+  .msg { max-width: 82%; padding: .5rem .8rem; border-radius: 1.1rem; }
+  .msg b { display: block; font-size: .75rem; font-weight: 600; color: var(--muted); }
+  .them { align-self: flex-start; background: var(--them); color: var(--them-fg); border-bottom-left-radius: .3rem; }
+  .me { align-self: flex-end; background: var(--me); color: var(--me-fg); border-bottom-right-radius: .3rem; }
+
+  .tabs { display: flex; gap: .25rem; margin-bottom: .5rem; }
+  .tabs button { font: inherit; font-size: .9rem; padding: .3rem .8rem; border-radius: .5rem; border: 1px solid transparent;
+                 background: none; color: var(--muted); cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: var(--fg); border-color: var(--line); background: var(--card); }
+  .install { position: relative; }
+  .install pre { padding-right: 5.5rem; }
+  .copy { position: absolute; top: .6rem; right: .6rem; font: inherit; font-size: .8rem; padding: .25rem .7rem;
+          border-radius: .4rem; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: .8rem; padding: 1rem 1.2rem;
+        overflow-x: auto; font-size: 13.5px; line-height: 1.55; margin: 0 0 1rem; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: .8rem; padding: 1.1rem 1.2rem; }
+  .card p { margin: 0; color: var(--muted); font-size: .95rem; }
+
+  footer { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-top: 1px solid var(--line);
+           padding-top: 1.25rem; padding-bottom: 2rem; font-size: .9rem; color: var(--muted); }
+</style>
